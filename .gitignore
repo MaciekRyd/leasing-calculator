@@ -1,0 +1,16 @@
+# Środowisko wirtualne
+venv/
+__pycache__/
+*.pyc
+
+# Pliki IDE
+.vscode/
+.idea/
+
+# Logi i cache
+*.log
+*.tmp
+
+# Inne
+.DS_Store
+.env

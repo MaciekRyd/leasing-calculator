@@ -39,7 +39,7 @@ else:
 
 wplata_pierwsza_proc = st.slider("Pierwsza wpłata (% ceny netto)", 0, 100, 15, step=1)
 wykup_proc = st.slider("Wartość wykupu (% ceny netto)", 0, 100, 15, step=1)
-liczba_miesiecy = st.selectbox("Okres leasingu (miesiące)", [24, 36, 48, 60, 72], value=60)
+liczba_miesiecy = st.selectbox("Okres leasingu (miesiące)", [24, 36, 48, 60, 72], index=3)
 prowizja_proc = st.number_input("Prowizja leasingowa (% kwoty finansowanej)", 0.0, 10.0, value=2.65, step=0.01)
 oplata_dodatkowa = st.number_input("Dodatkowe koszty jednorazowe (PLN)", 0.0, 10000.0, value=0.0, step=100.0)
 uwzglednij_n_minus_1 = st.checkbox("Odjąć 1 ratę (np. leasing 60 miesięcy = 59 rat)?", value=True)

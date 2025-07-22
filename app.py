@@ -19,10 +19,19 @@ if st.button("Oblicz ratę leasingową"):
 
     # Obliczenie raty miesięcznej z wykupem końcowym (balonem)
     if stopa_miesieczna > 0:
-        rata = (kwota_finansowana * stopa_miesieczna) / (1 - (1 + stopa_miesieczna) ** (-liczba_miesiecy)) \
-               + (wartosc_wykupu / ((1 + stopa_miesieczna) ** liczba_miesiecy))
-    else:
-        rata = (kwota_finansowana + wartosc_wykupu) / liczba_miesiecy
+        rata = (
+            (kwota_finansowana * stopa_miesieczna) -
+            (wartosc_wykupu * stopa_miesieczna) / ((1 + stopa_miesieczna) ** liczba_miesiecy)
+        ) / (1 - (1 + stopa_miesieczna) ** (-liczba_miesiecy))
+
+    # Całkowita suma wpłat leasingobiorcy
+    suma_rat = rata * liczba_miesiecy
+    suma_wplat = wplata_pierwsza + suma_rat + wartosc_wykupu
+
+    # Ile to procent ceny netto?
+procent_ceny_netto = (suma_wplat / cena_netto) * 100
+
+
 
     # Wyświetlenie wyników
     st.subheader("Wyniki:")
@@ -30,3 +39,6 @@ if st.button("Oblicz ratę leasingową"):
     st.write(f"💵 Pierwsza wpłata: **{wplata_pierwsza:,.2f} PLN**")
     st.write(f"📦 Wartość wykupu: **{wartosc_wykupu:,.2f} PLN**")
     st.write(f"📆 Rata miesięczna: **{rata:,.2f} PLN**")
+    st.write(f"📊 Suma rat leasingowych (bez wpłaty i wykupu): **{suma_rat:,.2f} PLN**")
+    st.write(f"💳 Całkowita suma wpłat (łącznie z wpłatą wstępną i wykupem): **{suma_wplat:,.2f} PLN**")
+    st.write(f"📈 Suma wpłat stanowi **{procent_ceny_netto:.2f}%** ceny netto")

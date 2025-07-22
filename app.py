@@ -1,10 +1,10 @@
 import streamlit as st
 import matplotlib.pyplot as plt
-import numpy as np
+import numpy_financial as npf
 import requests
 from bs4 import BeautifulSoup
 
-# === FUNKCJA: pobierz aktualny WIBOR 1M ===
+# === FUNKCJA: pobiera WIBOR 1M ===
 @st.cache_data(ttl=3600)
 def get_wibor_1m():
     try:
@@ -23,12 +23,13 @@ def get_wibor_1m():
         print(f"Błąd podczas pobierania WIBOR: {e}")
         return None
 
-# === INTERFEJS ===
-st.title("📊 Kalkulator leasingowy z prowizją i wykupem")
+# === INTERFEJS UŻYTKOWNIKA ===
+st.title("📊 Kalkulator leasingowy – model bankowy (Santander)")
 
 cena_netto = 178_780.50
 st.write(f"💼 Cena netto przedmiotu leasingu: **{cena_netto:,.2f} PLN**")
 
+# Parametry oprocentowania
 wibor_1m = get_wibor_1m()
 oprocentowanie = st.number_input("Roczna stopa procentowa (%):", min_value=0.0, max_value=30.0, value=5.11, step=0.01)
 
@@ -37,6 +38,7 @@ if wibor_1m is not None:
 else:
     st.warning("⚠️ Nie udało się pobrać aktualnego WIBOR 1M")
 
+# Parametry leasingu
 wplata_pierwsza_proc = st.slider("Pierwsza wpłata (% ceny netto)", 0, 100, 15, step=1)
 wykup_proc = st.slider("Wartość wykupu (% ceny netto)", 0, 100, 15, step=1)
 liczba_miesiecy = st.selectbox("Okres leasingu (miesiące)", [24, 36, 48, 60, 72], index=3)
@@ -51,17 +53,17 @@ if st.button("Oblicz leasing"):
     wartosc_wykupu = cena_netto * (wykup_proc / 100)
     kwota_finansowana = cena_netto - wplata_pierwsza
     prowizja_kwota = kwota_finansowana * (prowizja_proc / 100)
-    kwota_do_sfinansowania = kwota_finansowana + prowizja_kwota
+    kwota_do_sfinansowania = kwota_finansowana + prowizja_kwota  # Prowizja wliczana do rat
 
     stopa_miesieczna = (oprocentowanie / 100) / 12
 
     if stopa_miesieczna > 0:
-        rata = np.pmt(stopa_miesieczna, n, -kwota_do_sfinansowania, fv=wartosc_wykupu)
+        rata = npf.pmt(stopa_miesieczna, n, -kwota_do_sfinansowania, fv=wartosc_wykupu)
     else:
         rata = (kwota_do_sfinansowania - wartosc_wykupu) / n
 
     suma_rat = rata * n
-    suma_wplat = wplata_pierwsza + suma_rat + wartosc_wykupu + oplata_dodatkowa
+    suma_wplat = wplata_pierwsza + suma_rat + wartosc_wykupu +oplata_dodatkowa
     procent_netto = (suma_wplat / cena_netto) * 100
 
     # === WYNIKI ===
@@ -70,14 +72,14 @@ if st.button("Oblicz leasing"):
     st.write(f"➕ Prowizja leasingowa (wliczona w raty): **{prowizja_kwota:,.2f} PLN**")
     st.write(f"💳 Kwota całkowicie finansowana: **{kwota_do_sfinansowania:,.2f} PLN**")
     st.write(f"📆 Liczba rat: **{n}**")
-    st.write(f"💰 Miesięczna rata: **{rata:,.2f} PLN**")
+    st.write(f"💰 Miesięczna rata leasingowa: **{rata:,.2f} PLN**")
     st.write(f"📑 Suma rat leasingowych: **{suma_rat:,.2f} PLN**")
     st.write(f"💼 Całkowita suma wpłat (łącznie): **{suma_wplat:,.2f} PLN**")
     st.write(f"📊 Całkowite wpłaty to **{procent_netto:.2f}%** ceny netto")
 
     # === WYKRES ===
     fig, ax = plt.subplots()
-    kategorie = ["Pierwsza wpłata", "Suma rat", "Wartość wykupu", "Koszty dodatkowe"]
+    kategorie = ["Pierwsza wpłata", "Suma rat", "Wykup", "Koszty dodatkowe"]
     wartosci = [wplata_pierwsza, suma_rat, wartosc_wykupu, oplata_dodatkowa]
 
     ax.bar(kategorie, wartosci)
